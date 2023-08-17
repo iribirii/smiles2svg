@@ -55,15 +55,15 @@ to see help:
 ## Examples
 
 ```
-python smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_hetero'
+smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_hetero'
 ```
 ![vector CO2 image](figures/caffeine_names_hetero.svg)
 ```
-python smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_hetero' --color '#468BFF'
+smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_hetero' --color '#468BFF'
 ```
 ![vector CO2 image](figures/caffeine_names_all.svg)
 ```
-python smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_all'
+smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_all'
 ```
 ![vector CO2 image](figures/caffeine_color.svg)
 
