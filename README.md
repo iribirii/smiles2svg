@@ -68,7 +68,7 @@ python smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_all'
 ![vector CO2 image](figures/caffeine_color.svg)
 
 ## Future features
-- Change font
-- Add stroke to all atoms
-- Addition of Hydrogens in HB-donors
-- Addition of LP orbitals
+- [ ] Change font
+- [ ] Add stroke to all atoms
+- [ ] Addition of Hydrogens in HB-donors
+- [ ] Addition of LP orbitals
