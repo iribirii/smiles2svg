@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
+
 import argparse
 from ctypes import resize
 from rdkit import Chem
 from rdkit.Chem import AllChem
 import svgwrite
 import numpy as np
+from cairosvg import svg2png
+import math
 
 
 def extract_coordinates(mol):
@@ -42,7 +45,9 @@ def extract_bonds(mol):
         begin_pos = mol.GetConformer().GetAtomPosition(begin_atom.GetIdx())
         end_pos = mol.GetConformer().GetAtomPosition(end_atom.GetIdx())
         bond_coords = ((begin_pos.x, begin_pos.y), (end_pos.x, end_pos.y))
-        bond_data.append((bond_type, bond_coords))
+        atom1 = begin_atom.GetAtomicNum()
+        atom2 = end_atom.GetAtomicNum()
+        bond_data.append((bond_type, bond_coords, atom1, atom2))
 
     return bond_data
 
@@ -76,23 +81,23 @@ def atom_parameters(color):
         colors = [color]*128
     return radii, colors
 
-def draw_molecule(filename, atoms, bonds, draw_style, draw_color):
+def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_color):
 
     # Get atomic radii and colors
     atom_radii, atom_colors = atom_parameters(draw_color)
     dwg = svgwrite.Drawing(filename)
 
-    # Draw bonds
-    color = atom_colors[0]
-    draw_bonds(dwg, bonds,color)
+    draw_bonds(dwg, bonds, bond_color)
 
     # Draw atoms
     if draw_style == 'plain':
         draw_atoms_plain(dwg, atoms, atom_radii, atom_colors)
     elif draw_style == 'names_hetero':
-        draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors)
+        draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font)
     elif draw_style == 'names_all':
-        draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors)
+        draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors, font)
+    elif draw_style == 'stroke':
+        draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color)
 
     # Set viewBox size
     coords = [ a[3] for a in atoms ]
@@ -100,6 +105,8 @@ def draw_molecule(filename, atoms, bonds, draw_style, draw_color):
     set_viewbox(dwg, coords, r_list ) 
 
     dwg.save()
+
+    return dwg.tostring()
 
 def draw_bonds(dwg, bonds, color):
     for bond in bonds:
@@ -140,6 +147,15 @@ def displace_perpendicular(start, end, dist):
 
     return new_start.tolist(), new_end.tolist()
 
+def calculate_angle(vec):
+    angle_radians = math.atan2(vec[1], vec[0])
+    angle_degrees = math.degrees(angle_radians)
+
+    if angle_degrees < 0:
+        angle_degrees = 360 + angle_degrees
+    
+    return angle_degrees
+
 def draw_atoms_plain(dwg, atoms, atom_radii, atom_colors):
     for atom in atoms:
         a_name, a_number, n_bonds, coord = atom
@@ -150,7 +166,17 @@ def draw_atoms_plain(dwg, atoms, atom_radii, atom_colors):
         circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke='none')
         dwg.add(circle)
 
-def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors):
+def draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color):
+    for atom in atoms:
+        a_name, a_number, n_bonds, coord = atom
+        cx, cy = coord
+        r = atom_radii[a_number]/1.5
+        color = atom_colors[a_number]
+
+        circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke=bond_color, stroke_width=0.1)
+        dwg.add(circle)
+
+def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font):
     for atom in atoms:
         a_name, a_number, n_bonds, coord = atom
         cx, cy = coord
@@ -161,7 +187,7 @@ def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors):
         if a_name != 'C': 
             r += 0.1
             circle = dwg.circle(center=(cx,cy), r=r, fill='#ffffff', stroke=color, stroke_width=0.1)
-            text = dwg.text(a_name, insert=(cx-0.3,cy+0.25), font_size=0.8, font_family='Sans Seriff', fill=color)
+            text = dwg.text(a_name, insert=(cx-0.3,cy+0.25), font_size=0.8, font_family=font, fill=color)
         
             dwg.add(circle)
             dwg.add(text)
@@ -169,7 +195,7 @@ def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors):
             circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke='none')
             dwg.add(circle)
 
-def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors):
+def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors,font):
     for atom in atoms:
         a_name, a_number, n_bonds, coord = atom
         cx, cy = coord
@@ -178,7 +204,7 @@ def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors):
 
         r += 0.1
         circle = dwg.circle(center=(cx,cy), r=r, fill='#ffffff', stroke=color, stroke_width=0.1)
-        text = dwg.text(a_name, insert=(cx-0.3,cy+0.25), font_size=0.8, font_family='Sans Seriff', fill=color)
+        text = dwg.text(a_name, insert=(cx-0.3,cy+0.25), font_size=0.8, font_family=font, fill=color)
         
         dwg.add(circle)
         dwg.add(text)
@@ -212,6 +238,8 @@ def main(args):
         mol = Chem.MolFromSmiles(smile)
         draw_style = args.style
         draw_color = args.color
+        bond_color = args.bond_color
+        font = args.font
 
         Chem.Kekulize(mol)
 
@@ -222,12 +250,20 @@ def main(args):
         atom_data = extract_coordinates(mol)
         bond_data = extract_bonds(mol)
 
-        draw_molecule(svg_name, atom_data, bond_data, draw_style, draw_color)
+        svg = draw_molecule(svg_name, atom_data, bond_data, draw_style, draw_color, font, bond_color)
+
+        if args.png:
+            width = args.png_width
+
+            svg2png(bytestring=svg, write_to=f'{smile}.png', output_width=900)
+
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-            description="Generate 2D coordinates, draw, and save mol")
+            description="Generate 2D coordinates, draw, and save mol",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            )
     parser.add_argument(
             "-s","--smiles", 
             type=str, 
@@ -238,22 +274,41 @@ if __name__ == "__main__":
             type=str,
             default='none',
             help="Name of the file with all the SMILES codes")
-    parser.add_argument(
-            "-n", "--name",
-            type=str,
-            default='none',
-            help="Name for the SVG image")
+    # parser.add_argument(
+    #         "-n", "--name",
+    #         type=str,
+    #         default='none',
+    #         help="Name for the SVG image")
     parser.add_argument(
             "--style", 
             type=str, 
-            choices=['plain','names_hetero','names_all'], 
+            choices=['plain','names_hetero','names_all','stroke'], 
             default='plain', 
-            help="Select the style for the atoms. (default='plain')")
+            help="Select the style for the atoms.")
     parser.add_argument(
             "--color", 
             type=str, 
             default='default', 
-            help="Select a color for all the molecule. If 'default', colors will the have different colors depending on the element. (default='default')")
+            help="Select a color for all the molecule. If 'default', atoms will have different colors depending on the element.")
+    parser.add_argument(
+            "--png",
+            action='store_true',
+            help="Saves the figure in png format as well.")
+    parser.add_argument(
+            "--png_width",
+            type=int,
+            default='900',
+            help='Select the image width in pixels.')
+    parser.add_argument(
+            "--font",
+            type=str,
+            default='Calibri',
+            help='Select the font for the atomic symbols.')
+    parser.add_argument(
+            "--bond_color",
+            type=str,
+            default='#717171',
+            help='Select the color for the bonds format "#RRGGBB".')
     args = parser.parse_args()
     main(args)
 

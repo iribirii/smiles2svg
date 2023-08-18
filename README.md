@@ -41,7 +41,6 @@ to see help:
 -f SMILES_FILE, --smiles_file SMILES_FILE
                       Name of the file with all the SMILES
                       codes
--n NAME, --name NAME  Name for the SVG image
 --style {plain,names_hetero,names_all}
                       Select the style for the atoms.
                       (default='plain')
@@ -68,7 +67,11 @@ smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_all'
 ![vector CO2 image](figures/caffeine_color.svg)
 
 ## Future features
-- [ ] Change font
-- [ ] Add stroke to all atoms
+- [x] Select font
+- [ ] Center text properly
+- [x] Save as PNG
+- [ ] Add option to custom name
+- [x] Add option to draw stroke to all atoms
+- [ ] Add option to draw the bonds with a color gradient between the atoms
 - [ ] Addition of Hydrogens in HB-donors
 - [ ] Addition of LP orbitals
