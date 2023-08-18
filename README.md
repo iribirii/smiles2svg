@@ -35,24 +35,37 @@ smiles2svg.py -h
 ```
 to see help:
 ```
--h, --help            show this help message and exit
--s SMILES, --smiles SMILES
-                      SMILES string of the mol
--f SMILES_FILE, --smiles_file SMILES_FILE
-                      Name of the file with all the SMILES
-                      codes
---style {plain,names_hetero,names_all}
-                      Select the style for the atoms.
-                      (default='plain')
---color COLOR         Select a color for all the molecule.
-                      If 'default', colors will the have
-                      different colors depending on the
-                      element. (default='default')
-
+options:
+  -h, --help            show this help message and exit
+  -s SMILES, --smiles SMILES
+                        SMILES string of the mol (default: none)
+  -f SMILES_FILE, --smiles_file SMILES_FILE
+                        Name of the file with all the SMILES codes
+                        (default: none)
+  --style {plain,names_hetero,names_all,stroke}
+                        Select the style for the atoms. (default:
+                        plain)
+  --color COLOR         Select a color for all the molecule. If
+                        'default', atoms will have different colors
+                        depending on the element. (default: default)
+  --png                 Saves the figure in png format as well.
+                        (default: False)
+  --png_width PNG_WIDTH
+                        Select the image width in pixels. (default:
+                        900)
+  --font FONT           Select the font for the atomic symbols.
+                        (default: Calibri)
+  --bond_color BOND_COLOR
+                        Select the color for the bonds format
+                        "#RRGGBB". (default: #717171)
 ```
 
 ## Examples
 
+```
+smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'stroke'
+```
+![vector CO2 image](figures/caffeine_stroke.svg)
 ```
 smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_hetero'
 ```
