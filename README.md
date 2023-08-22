@@ -4,6 +4,7 @@ Script to make vector images of 2D-molecules from their SMILES code.
 
 ## Requirements
 ```
+CairoSVG==2.7.1
 numpy==1.24.3
 rdkit==2023.3.2
 svgwrite==1.4.3
