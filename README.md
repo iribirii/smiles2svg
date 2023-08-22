@@ -36,29 +36,21 @@ smiles2svg.py -h
 ```
 to see help:
 ```
-options:
   -h, --help            show this help message and exit
   -s SMILES, --smiles SMILES
                         SMILES string of the mol (default: none)
   -f SMILES_FILE, --smiles_file SMILES_FILE
-                        Name of the file with all the SMILES codes
-                        (default: none)
+                        Name of the file with all the SMILES codes (default: none)
+  -n NAME, --name NAME  Name for the SVG (and PNG) image. Only available for 1 SMILES code, not for list of SMILES. (default: SMILES)
   --style {plain,names_hetero,names_all,stroke}
-                        Select the style for the atoms. (default:
-                        plain)
-  --color COLOR         Select a color for all the molecule. If
-                        'default', atoms will have different colors
-                        depending on the element. (default: default)
-  --png                 Saves the figure in png format as well.
-                        (default: False)
+                        Select the style for the atoms. (default: plain)
+  --color COLOR         Select a color for all the molecule. If 'default', atoms will have different colors depending on the element. (default: default)
+  --png                 Saves the figure in png format as well. (default: False)
   --png_width PNG_WIDTH
-                        Select the image width in pixels. (default:
-                        900)
-  --font FONT           Select the font for the atomic symbols.
-                        (default: Calibri)
+                        Select the image width in pixels. (default: 900)
+  --font FONT           Select the font for the atomic symbols. (default: Calibri)
   --bond_color BOND_COLOR
-                        Select the color for the bonds format
-                        "#RRGGBB". (default: #717171)
+                        Select the color for the bonds format "#RRGGBB". (default: #717171)
 ```
 
 ## Examples
