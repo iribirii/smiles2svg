@@ -87,6 +87,9 @@ def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_col
     atom_radii, atom_colors = atom_parameters(draw_color)
     dwg = svgwrite.Drawing(filename)
 
+    if draw_color != 'default':
+        bond_color = atom_colors[0]
+
     draw_bonds(dwg, bonds, bond_color)
 
     # Draw atoms
@@ -232,7 +235,12 @@ def main(args):
             smiles = [ line.rstrip('\n') for line in f.readlines()]
 
     for smile in smiles:
-        svg_name = f'{smile}.svg' 
+        if args.name == 'SMILES':
+            svg_name = f'{smile}.svg' 
+            png_name = f'{smile}.png' 
+        else:
+            svg_name = f'{args.name}.svg'
+            png_name = f'{args.name}.png'
 
         # Load a mol from a SMILES string
         mol = Chem.MolFromSmiles(smile)
@@ -255,7 +263,7 @@ def main(args):
         if args.png:
             width = args.png_width
 
-            svg2png(bytestring=svg, write_to=f'{smile}.png', output_width=900)
+            svg2png(bytestring=svg, write_to=png_name, output_width=width)
 
 
 
@@ -274,11 +282,11 @@ if __name__ == "__main__":
             type=str,
             default='none',
             help="Name of the file with all the SMILES codes")
-    # parser.add_argument(
-    #         "-n", "--name",
-    #         type=str,
-    #         default='none',
-    #         help="Name for the SVG image")
+    parser.add_argument(
+            "-n", "--name",
+            type=str,
+            default='SMILES',
+            help="Name for the SVG (and PNG) image. Only available for 1 SMILES code, not for list of SMILES.")
     parser.add_argument(
             "--style", 
             type=str, 
