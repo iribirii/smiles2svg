@@ -74,6 +74,8 @@ smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_hetero' --color '
 smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_all'
 ```
 ![caffeine color image](figures/caffeine_color.svg)
+## Hydrogen addition
+It is also possible to add the H atoms to the hetero atoms that needed it using the ```--add_hydrogens``` option
 ```
 smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --add_hydrogens
 ```
