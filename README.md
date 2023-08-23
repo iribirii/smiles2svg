@@ -76,7 +76,7 @@ smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_all'
 - [x] Select font
 - [ ] Center text properly
 - [x] Save as PNG
-- [ ] Add option to custom name
+- [x] Add option to custom name
 - [x] Add option to draw stroke to all atoms
 - [ ] Add option to draw the bonds with a color gradient between the atoms
 - [ ] Addition of Hydrogens in HB-donors
