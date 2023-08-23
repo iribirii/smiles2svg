@@ -243,37 +243,24 @@ def add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, style, bond_color):
             if a_id == a_bond[-2]:
                 start, end = a_bond[1]
                 vec = np.array(end) - np.array(start)
-                sign_x = np.sign(vec[0])
-                sign_y = np.sign(vec[1])
-                sign = sign_x * sign_y
-                sign = 1 if abs(sign) == 0 else sign
-                angle = sign * np.deg2rad(120)
-                rot = np.array([[math.cos(angle), -math.sin(angle)],[math.sin(angle), math.cos(angle)]])
-                rotated = np.dot(rot, vec)
-                d = a_r + h_r + r_extra
-                length = np.linalg.norm(rotated)
-                final_vec = ( rotated / length ) * d
-                h_center = start + final_vec
-                circle = dwg.circle(center=(h_center), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
-                dwg.add(circle)
-            else:
+            elif a_id == a_bond[-1]:
                 end, start = a_bond[1]
                 vec = np.array(end) - np.array(start)
-                sign_x = np.sign(vec[0])
-                sign_y = np.sign(vec[1])
-                sign = sign_x * sign_y
-                sign = 1 if abs(sign) == 0 else sign
-                angle = sign * np.deg2rad(120)
-                rot = np.array([[math.cos(angle), -math.sin(angle)],[math.sin(angle), math.cos(angle)]])
-                rotated = np.dot(rot, vec)
-                d = a_r + h_r + r_extra
-                length = np.linalg.norm(rotated)
-                final_vec = ( rotated / length ) * d
-                h_center = start + final_vec
-                circle = dwg.circle(center=(h_center), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
-                dwg.add(circle)
+            sign_x = np.sign(vec[0])
+            sign_y = np.sign(vec[1])
+            sign = sign_x * sign_y
+            sign = 1 if abs(sign) == 0 else sign
+            angle = sign * np.deg2rad(120)
+            rot = np.array([[math.cos(angle), -math.sin(angle)],[math.sin(angle), math.cos(angle)]])
+            rotated = np.dot(rot, vec)
+            d = a_r + h_r + r_extra
+            length = np.linalg.norm(rotated)
+            final_vec = ( rotated / length ) * d
+            h_center = start + final_vec
+            circle = dwg.circle(center=(h_center), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
+            dwg.add(circle)
 
-        if (a_name == 'N') and (n_bonds == 2) and (n_neighbors == 1): 
+        if (a_name in ['N','P']) and (n_bonds == 2) and (n_neighbors == 1): 
             a_bond = [ x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)][0]
             a_r = atom_radii[a_number]/1.5
             h_color = atom_colors[1]
@@ -281,37 +268,24 @@ def add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, style, bond_color):
             if a_id == a_bond[-2]:
                 start, end = a_bond[1]
                 vec = np.array(end) - np.array(start)
-                sign_x = np.sign(vec[0])
-                sign_y = np.sign(vec[1])
-                sign = sign_x * sign_y
-                sign = 1 if abs(sign) == 0 else sign
-                angle = sign * np.deg2rad(120)
-                rot = np.array([[math.cos(angle), -math.sin(angle)],[math.sin(angle), math.cos(angle)]])
-                rotated = np.dot(rot, vec)
-                d = a_r + h_r + r_extra
-                length = np.linalg.norm(rotated)
-                final_vec = ( rotated / length ) * d
-                h_center = start + final_vec
-                circle = dwg.circle(center=(h_center), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
-                dwg.add(circle)
-            else:
+            elif a_id == a_bond[-1]:
                 end, start = a_bond[1]
                 vec = np.array(end) - np.array(start)
-                sign_x = np.sign(vec[0])
-                sign_y = np.sign(vec[1])
-                sign = sign_x * sign_y
-                sign = 1 if abs(sign) == 0 else sign
-                angle = sign * np.deg2rad(120)
-                rot = np.array([[math.cos(angle), -math.sin(angle)],[math.sin(angle), math.cos(angle)]])
-                rotated = np.dot(rot, vec)
-                d = a_r + h_r + r_extra
-                length = np.linalg.norm(rotated)
-                final_vec = ( rotated / length ) * d
-                h_center = start + final_vec
-                circle = dwg.circle(center=(h_center), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
-                dwg.add(circle)
+            sign_x = np.sign(vec[0])
+            sign_y = np.sign(vec[1])
+            sign = sign_x * sign_y
+            sign = 1 if abs(sign) == 0 else sign
+            angle = sign * np.deg2rad(120)
+            rot = np.array([[math.cos(angle), -math.sin(angle)],[math.sin(angle), math.cos(angle)]])
+            rotated = np.dot(rot, vec)
+            d = a_r + h_r + r_extra
+            length = np.linalg.norm(rotated)
+            final_vec = ( rotated / length ) * d
+            h_center = start + final_vec
+            circle = dwg.circle(center=(h_center), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
+            dwg.add(circle)
 
-        if (a_name == 'N') and (n_bonds == 1) and (n_neighbors == 1): 
+        if (a_name in ['N','P']) and (n_bonds == 1) and (n_neighbors == 1): 
             a_bond = [ x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)][0]
             a_r = atom_radii[a_number]/1.5
             h_color = atom_colors[1]
@@ -320,49 +294,64 @@ def add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, style, bond_color):
             if a_id == a_bond[-2]:
                 start, end = a_bond[1]
                 vec = np.array(end) - np.array(start)
-                length = np.linalg.norm(vec)
-                sign_x = np.sign(vec[0])
-                sign_y = np.sign(vec[1])
-                sign = sign_x * sign_y
-                sign = 1 if abs(sign) == 0 else sign
-                angle1 = sign * np.deg2rad(120)
-                rot1 = np.array([[math.cos(angle1), -math.sin(angle1)],[math.sin(angle1), math.cos(angle1)]])
-                rotated1 = np.dot(rot1, vec)
-                final_vec1 = ( rotated1 / length ) * d
-                h_center1 = start + final_vec1
-                circle1 = dwg.circle(center=(h_center1), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
-                dwg.add(circle1)
-                
-                angle2 = -sign * np.deg2rad(120)
-                rot2 = np.array([[math.cos(angle2), -math.sin(angle2)],[math.sin(angle2), math.cos(angle2)]])
-                rotated2 = np.dot(rot2, vec)
-                final_vec2 = ( rotated2 / length ) * d
-                h_center2 = start + final_vec2
-                circle2 = dwg.circle(center=(h_center2), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
-                dwg.add(circle2)
-            else:
+            elif a_id == a_bond[-1]:
                 end, start = a_bond[1]
                 vec = np.array(end) - np.array(start)
-                length = np.linalg.norm(vec)
-                sign_x = np.sign(vec[0])
-                sign_y = np.sign(vec[1])
-                sign = sign_x * sign_y
-                sign = 1 if abs(sign) == 0 else sign
-                angle1 = sign * np.deg2rad(120)
-                rot1 = np.array([[math.cos(angle1), -math.sin(angle1)],[math.sin(angle1), math.cos(angle1)]])
-                rotated1 = np.dot(rot1, vec)
-                final_vec1 = ( rotated1 / length ) * d
-                h_center1 = start + final_vec1
-                circle1 = dwg.circle(center=(h_center1), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
-                dwg.add(circle1)
-                
-                angle2 = -sign * np.deg2rad(120)
-                rot2 = np.array([[math.cos(angle2), -math.sin(angle2)],[math.sin(angle2), math.cos(angle2)]])
-                rotated2 = np.dot(rot2, vec)
-                final_vec2 = ( rotated2 / length ) * d
-                h_center2 = start + final_vec2
-                circle2 = dwg.circle(center=(h_center2), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
-                dwg.add(circle2)
+
+            sign_x = np.sign(vec[0])
+            sign_y = np.sign(vec[1])
+            sign = sign_x * sign_y
+            sign = 1 if abs(sign) == 0 else sign
+
+            angle1 = sign * np.deg2rad(120)
+            rot1 = np.array([[math.cos(angle1), -math.sin(angle1)],[math.sin(angle1), math.cos(angle1)]])
+            rotated1 = np.dot(rot1, vec)
+            length = np.linalg.norm(rotated1)
+            final_vec1 = ( rotated1 / length ) * d
+            h_center1 = start + final_vec1
+            circle1 = dwg.circle(center=(h_center1), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
+            dwg.add(circle1)
+            
+            angle2 = -sign * np.deg2rad(120)
+            rot2 = np.array([[math.cos(angle2), -math.sin(angle2)],[math.sin(angle2), math.cos(angle2)]])
+            rotated2 = np.dot(rot2, vec)
+            length = np.linalg.norm(rotated2)
+            final_vec2 = ( rotated2 / length ) * d
+            h_center2 = start + final_vec2
+            circle2 = dwg.circle(center=(h_center2), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
+            dwg.add(circle2)
+
+        if (a_name in ['N','P']) and (n_bonds == 2) and (n_neighbors == 2): 
+            
+            a_bond = [ x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)]
+            b1, b2 = a_bond
+
+            if a_id == b1[-2]:
+                start, end = b1[1]
+                vec1 = np.array(end) - np.array(start)
+            elif a_id == b1[-1]:
+                end, start = b1[1]
+                vec1 = np.array(end) - np.array(start)
+
+            if a_id == b2[-2]:
+                start, end = b2[1]
+                vec2 = np.array(end) - np.array(start)
+            elif a_id == b2[-1]:
+                end, start = b2[1]
+                vec2 = np.array(end) - np.array(start)
+
+            vec_bis = -1 * ( vec1 + vec2 ) / 2
+
+            a_r = atom_radii[a_number]/1.5
+            h_color = atom_colors[1]
+
+            d = a_r + h_r + r_extra
+            length = np.linalg.norm(vec_bis)
+
+            final_vec = ( vec_bis / length ) * d
+            h_center = start + final_vec
+            circle = dwg.circle(center=(h_center), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
+            dwg.add(circle)
 
 
 def set_viewbox(dwg, coords, rs):
