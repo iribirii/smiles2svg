@@ -16,6 +16,8 @@ def extract_coordinates(mol):
     for atom in mol.GetAtoms():
         atom_type = atom.GetSymbol()
         atom_number = atom.GetAtomicNum()
+        atom_id = atom.GetIdx()
+        atom_n_neighbors = atom.GetDegree()
         pos = mol.GetConformer().GetAtomPosition(atom.GetIdx())
         atom_coords = (pos.x, pos.y)
         # Count the number of bonds based on their types
@@ -31,7 +33,7 @@ def extract_coordinates(mol):
             elif bond.GetBondType() == Chem.rdchem.BondType.TRIPLE:
                 n_bonds += 3
 
-        atom_data.append((atom_type, atom_number, n_bonds, atom_coords))
+        atom_data.append((atom_type, atom_id, atom_number, n_bonds, atom_n_neighbors, atom_coords))
 
     return atom_data
 
@@ -41,13 +43,15 @@ def extract_bonds(mol):
     for bond in mol.GetBonds():
         begin_atom = bond.GetBeginAtom()
         end_atom = bond.GetEndAtom()
+        begin_id = begin_atom.GetIdx()
+        end_id = end_atom.GetIdx()
         bond_type = bond.GetBondTypeAsDouble()  # Change to GetBondType() for string representation
         begin_pos = mol.GetConformer().GetAtomPosition(begin_atom.GetIdx())
         end_pos = mol.GetConformer().GetAtomPosition(end_atom.GetIdx())
         bond_coords = ((begin_pos.x, begin_pos.y), (end_pos.x, end_pos.y))
         atom1 = begin_atom.GetAtomicNum()
         atom2 = end_atom.GetAtomicNum()
-        bond_data.append((bond_type, bond_coords, atom1, atom2))
+        bond_data.append((bond_type, bond_coords, atom1, atom2, begin_id, end_id))
 
     return bond_data
 
@@ -81,7 +85,7 @@ def atom_parameters(color):
         colors = [color]*128
     return radii, colors
 
-def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_color):
+def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_color, hydrogens):
 
     # Get atomic radii and colors
     atom_radii, atom_colors = atom_parameters(draw_color)
@@ -102,9 +106,12 @@ def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_col
     elif draw_style == 'stroke':
         draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color)
 
+    if hydrogens:
+        add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii)
+
     # Set viewBox size
-    coords = [ a[3] for a in atoms ]
-    r_list = [ atom_radii[a[1]] for a in atoms ]
+    coords = [ a[5] for a in atoms ]
+    r_list = [ atom_radii[a[2]] for a in atoms ]
     set_viewbox(dwg, coords, r_list ) 
 
     dwg.save()
@@ -161,7 +168,7 @@ def calculate_angle(vec):
 
 def draw_atoms_plain(dwg, atoms, atom_radii, atom_colors):
     for atom in atoms:
-        a_name, a_number, n_bonds, coord = atom
+        a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
         cx, cy = coord
         r = atom_radii[a_number]/1.5
         color = atom_colors[a_number]
@@ -171,7 +178,7 @@ def draw_atoms_plain(dwg, atoms, atom_radii, atom_colors):
 
 def draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color):
     for atom in atoms:
-        a_name, a_number, n_bonds, coord = atom
+        a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
         cx, cy = coord
         r = atom_radii[a_number]/1.5
         color = atom_colors[a_number]
@@ -181,7 +188,7 @@ def draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color):
 
 def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font):
     for atom in atoms:
-        a_name, a_number, n_bonds, coord = atom
+        a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
         cx, cy = coord
         r = atom_radii[a_number]/1.5
         color = atom_colors[a_number]
@@ -211,6 +218,42 @@ def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors,font):
         
         dwg.add(circle)
         dwg.add(text)
+
+def add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii):
+    for atom in atoms:
+        a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
+        
+        if (a_name == 'O') and (n_bonds == 1) and (n_neighbors == 1): 
+            a_bond = [ x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)][0]
+            a_r = atom_radii[a_number]/1.5
+            h_r = atom_radii[1]/1.5
+            h_color = atom_colors[1]
+
+            angle = np.deg2rad(120)
+            rot = np.array([[math.cos(angle), -math.sin(angle)],[math.sin(angle), math.cos(angle)]])
+
+            if a_id == a_bond[-2]:
+                start, end = a_bond[1]
+                vec = np.array(end) - np.array(start)
+                rotated = np.dot(rot, vec)
+                d = a_r + h_r
+                length = np.linalg.norm(rotated)
+                final_vec = ( rotated / length ) * d
+                h_center = start + final_vec
+                circle = dwg.circle(center=(h_center), r=h_r, fill=h_color)
+                dwg.add(circle)
+            else:
+                end, start = a_bond[1]
+                vec = np.array(end) - np.array(start)
+                rotated = np.dot(rot, vec)
+                d = a_r + h_r
+                length = np.linalg.norm(rotated)
+                final_vec = ( rotated / length ) * d
+                h_center = start + final_vec
+                circle = dwg.circle(center=(h_center), r=h_r, fill=h_color)
+                dwg.add(circle)
+
+
 
 def set_viewbox(dwg, coords, rs):
     r = max(rs)
@@ -258,7 +301,9 @@ def main(args):
         atom_data = extract_coordinates(mol)
         bond_data = extract_bonds(mol)
 
-        svg = draw_molecule(svg_name, atom_data, bond_data, draw_style, draw_color, font, bond_color)
+        hydrogens = args.add_hydrogens
+
+        svg = draw_molecule(svg_name, atom_data, bond_data, draw_style, draw_color, font, bond_color, hydrogens)
 
         if args.png:
             width = args.png_width
@@ -317,6 +362,10 @@ if __name__ == "__main__":
             type=str,
             default='#717171',
             help='Select the color for the bonds format "#RRGGBB".')
+    parser.add_argument(
+            "--add_hydrogens",
+            action='store_true',
+            help="Adds Hydrogen atoms to the HB-Donors.")
     args = parser.parse_args()
     main(args)
 
