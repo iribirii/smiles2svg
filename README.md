@@ -18,7 +18,7 @@ smiles2svg -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12'
 
 Creates a SVG image with the default parameters and produces the following image
 
-![vector CO2 image](figures/caffeine_default.svg)
+![caffeine image](figures/caffeine_default.svg)
 
 A plain text file with all the SMILES codes written as individual lines can also be used as input.
 In this case the script with generate a SVG files for each individual SMILES code in the file.
@@ -61,19 +61,23 @@ to see help:
 ```
 smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'stroke'
 ```
-![vector CO2 image](figures/caffeine_stroke.svg)
+![caffeine stroke image](figures/caffeine_stroke.svg)
 ```
 smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_hetero'
 ```
-![vector CO2 image](figures/caffeine_names_hetero.svg)
+![caffeine hetero names image](figures/caffeine_names_hetero.svg)
 ```
 smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_hetero' --color '#468BFF'
 ```
-![vector CO2 image](figures/caffeine_names_all.svg)
+![caffeine all names image](figures/caffeine_names_all.svg)
 ```
 smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --style 'names_all'
 ```
-![vector CO2 image](figures/caffeine_color.svg)
+![caffeine color image](figures/caffeine_color.svg)
+```
+smiles2svg.py -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --add_hydrogens
+```
+![add_hydrogens image](figures/add_hydrogens.svg)
 
 ## Future features
 - [x] Select font
