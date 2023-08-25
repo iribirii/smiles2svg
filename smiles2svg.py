@@ -85,7 +85,7 @@ def atom_parameters(color):
         colors = [color]*128
     return radii, colors
 
-def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_color, hydrogens, thickness, carbons):
+def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_color, hydrogens, thickness, carbons, circles):
 
     # Get atomic radii and colors
     atom_radii, atom_colors = atom_parameters(draw_color)
@@ -98,13 +98,13 @@ def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_col
 
     # Draw atoms
     if draw_style == 'plain':
-        draw_atoms_plain(dwg, atoms, atom_radii, atom_colors, thickness,carbons)
+        draw_atoms_plain(dwg, atoms, atom_radii, atom_colors, thickness, carbons)
     elif draw_style == 'names_hetero':
-        draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, thickness, carbons)
+        draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, thickness, carbons, circles)
     elif draw_style == 'names_all':
-        draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors, font, thickness, carbons)
+        draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors, font, thickness, carbons, circles)
     elif draw_style == 'stroke':
-        draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color, thickness, carbons)
+        draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color, thickness, carbons, circles)
 
     if hydrogens:
         add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, draw_style, bond_color)
@@ -189,7 +189,7 @@ def draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color, thickness
         circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke=bond_color, stroke_width=0.1)
         dwg.add(circle)
 
-def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, thickness, carbons):
+def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, thickness, carbons, circles):
     for atom in atoms:
         a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
         cx, cy = coord
@@ -199,7 +199,10 @@ def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, thickness
         # if a_name in ['N','O','S','P']:
         if a_name != 'C':
             r += 0.1
-            circle = dwg.circle(center=(cx,cy), r=r, fill='#ffffff', stroke=color, stroke_width=0.1)
+            sw = 0.0
+            if not(circle):
+                sw = 0.1
+            circle = dwg.circle(center=(cx,cy), r=r, fill='#ffffff', stroke=color, stroke_width=sw)
             text = dwg.text(a_name, insert=(cx-0.3,cy+0.25), font_size=0.8, font_family=font, fill=color)
 
             dwg.add(circle)
@@ -210,7 +213,7 @@ def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, thickness
             circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke='none')
             dwg.add(circle)
 
-def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors,font, thickness, carbons):
+def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors,font, thickness, carbons, circles):
     for atom in atoms:
         a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
         cx, cy = coord
@@ -218,6 +221,10 @@ def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors,font, thickness, ca
         color = atom_colors[a_number]
 
         r += 0.1
+        sw = 0.0
+        if not(circle):
+            sw = 0.1
+
         circle = dwg.circle(center=(cx,cy), r=r, fill='#ffffff', stroke=color, stroke_width=0.1)
         text = dwg.text(a_name, insert=(cx-0.3,cy+0.25), font_size=0.8, font_family=font, fill=color)
 
@@ -397,6 +404,7 @@ def main(args):
         font = args.font
         thickness = float(args.bond_thickness)
         carbons = args.add_carbons
+        circles = args.circle_labels
 
         Chem.Kekulize(mol)
 
@@ -409,7 +417,7 @@ def main(args):
 
         hydrogens = args.add_hydrogens
 
-        svg = draw_molecule(svg_name, atom_data, bond_data, draw_style, draw_color, font, bond_color, hydrogens, thickness, carbons)
+        svg = draw_molecule(svg_name, atom_data, bond_data, draw_style, draw_color, font, bond_color, hydrogens, thickness, carbons, circles)
 
         if args.png:
             width = args.png_width
@@ -478,8 +486,17 @@ if __name__ == "__main__":
             action='store_true',
             help="Show carbon atoms to the figures.")
     parser.add_argument(
+            "--circle_labels",
+            action='store_true',
+            help="Show circles around the labeled atoms.")
+    parser.add_argument(
             "--add_hydrogens",
             action='store_true',
             help="Adds Hydrogen atoms to the HB-Donors.")
+    parser.add_argument(
+            "--add_hydrogen_labels",
+            action='store_true',
+            help="Adds Hydrogen atoms to the HB-Donors.")
+
     args = parser.parse_args()
     main(args)
