@@ -85,7 +85,7 @@ def atom_parameters(color):
         colors = [color]*128
     return radii, colors
 
-def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_color, hydrogens):
+def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_color, hydrogens, thickness):
 
     # Get atomic radii and colors
     atom_radii, atom_colors = atom_parameters(draw_color)
@@ -94,7 +94,7 @@ def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_col
     if draw_color != 'default':
         bond_color = atom_colors[0]
 
-    draw_bonds(dwg, bonds, bond_color)
+    draw_bonds(dwg, bonds, bond_color, thickness)
 
     # Draw atoms
     if draw_style == 'plain':
@@ -112,37 +112,37 @@ def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_col
     # Set viewBox size
     coords = [ a[5] for a in atoms ]
     r_list = [ atom_radii[a[2]] for a in atoms ]
-    set_viewbox(dwg, coords, r_list ) 
+    set_viewbox(dwg, coords, r_list )
 
     dwg.save()
 
     return dwg.tostring()
 
-def draw_bonds(dwg, bonds, color):
+def draw_bonds(dwg, bonds, color, thickness):
     for bond in bonds:
         bond_order = bond[0]
         bond_start, bond_end = bond[1]
 
         if bond_order == 1:
-            line = dwg.line(start=bond_start, end=bond_end, stroke=color, stroke_width=0.1)
+            line = dwg.line(start=bond_start, end=bond_end, stroke=color, stroke_width=thickness)
             dwg.add(line)
         elif bond_order == 2 or bond_order == 1.5:
             dist=0.2
             start_up, end_up = displace_perpendicular(bond_start, bond_end, dist)
-            line_up = dwg.line(start=start_up, end=end_up, stroke=color, stroke_width=0.1)
+            line_up = dwg.line(start=start_up, end=end_up, stroke=color, stroke_width=thickness)
             dwg.add(line_up)
             start_down, end_down = displace_perpendicular(bond_start, bond_end, -dist)
-            line_down = dwg.line(start=start_down, end=end_down, stroke=color, stroke_width=0.1)
+            line_down = dwg.line(start=start_down, end=end_down, stroke=color, stroke_width=thickness)
             dwg.add(line_down)
         elif bond_order == 3:
             dist=0.25
-            line_mid = dwg.line(start=bond_start, end=bond_end, stroke=color, stroke_width=0.1)
+            line_mid = dwg.line(start=bond_start, end=bond_end, stroke=color, stroke_width=thickness)
             dwg.add(line_mid)
             start_up, end_up = displace_perpendicular(bond_start, bond_end, dist)
-            line_up = dwg.line(start=start_up, end=end_up, stroke=color, stroke_width=0.1)
+            line_up = dwg.line(start=start_up, end=end_up, stroke=color, stroke_width=thickness)
             dwg.add(line_up)
             start_down, end_down = displace_perpendicular(bond_start, bond_end, -dist)
-            line_down = dwg.line(start=start_down, end=end_down, stroke=color, stroke_width=0.1)
+            line_down = dwg.line(start=start_down, end=end_down, stroke=color, stroke_width=thickness)
             dwg.add(line_down)
 
 
@@ -163,7 +163,7 @@ def calculate_angle(vec):
 
     if angle_degrees < 0:
         angle_degrees = 360 + angle_degrees
-    
+
     return angle_degrees
 
 def draw_atoms_plain(dwg, atoms, atom_radii, atom_colors):
@@ -172,6 +172,8 @@ def draw_atoms_plain(dwg, atoms, atom_radii, atom_colors):
         cx, cy = coord
         r = atom_radii[a_number]/1.5
         color = atom_colors[a_number]
+        if a_name == 'C':
+            r=0.05
 
         circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke='none')
         dwg.add(circle)
@@ -182,7 +184,8 @@ def draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color):
         cx, cy = coord
         r = atom_radii[a_number]/1.5
         color = atom_colors[a_number]
-
+        if a_name == 'C':
+            r=0.05
         circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke=bond_color, stroke_width=0.1)
         dwg.add(circle)
 
@@ -194,14 +197,15 @@ def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font):
         color = atom_colors[a_number]
 
         # if a_name in ['N','O','S','P']:
-        if a_name != 'C': 
+        if a_name != 'C':
             r += 0.1
             circle = dwg.circle(center=(cx,cy), r=r, fill='#ffffff', stroke=color, stroke_width=0.1)
             text = dwg.text(a_name, insert=(cx-0.3,cy+0.25), font_size=0.8, font_family=font, fill=color)
-        
+
             dwg.add(circle)
             dwg.add(text)
         else:
+            r=0.05
             circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke='none')
             dwg.add(circle)
 
@@ -215,7 +219,7 @@ def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors,font):
         r += 0.1
         circle = dwg.circle(center=(cx,cy), r=r, fill='#ffffff', stroke=color, stroke_width=0.1)
         text = dwg.text(a_name, insert=(cx-0.3,cy+0.25), font_size=0.8, font_family=font, fill=color)
-        
+
         dwg.add(circle)
         dwg.add(text)
 
@@ -226,7 +230,7 @@ def add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, style, bond_color):
     elif (style == 'names_hetero') or (style == 'names_all'):
         r_extra = 0.1
         s_width = 0
-    elif (style == 'stroke'): 
+    elif (style == 'stroke'):
         r_extra = 0
         s_width = 0.1
 
@@ -236,7 +240,7 @@ def add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, style, bond_color):
     for atom in atoms:
         a_name, a_id, a_number, n_bonds, n_neighbors, coord = atom
 
-        if (a_name in ['O','S']) and (n_bonds == 1) and (n_neighbors == 1): 
+        if (a_name in ['O','S']) and (n_bonds == 1) and (n_neighbors == 1):
             a_bond = [ x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)][0]
             a_r = atom_radii[a_number]/1.5
 
@@ -260,7 +264,7 @@ def add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, style, bond_color):
             circle = dwg.circle(center=(h_center), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
             dwg.add(circle)
 
-        if (a_name in ['N','P']) and (n_bonds == 2) and (n_neighbors == 1): 
+        if (a_name in ['N','P']) and (n_bonds == 2) and (n_neighbors == 1):
             a_bond = [ x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)][0]
             a_r = atom_radii[a_number]/1.5
             h_color = atom_colors[1]
@@ -285,7 +289,7 @@ def add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, style, bond_color):
             circle = dwg.circle(center=(h_center), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
             dwg.add(circle)
 
-        if (a_name in ['N','P']) and (n_bonds == 1) and (n_neighbors == 1): 
+        if (a_name in ['N','P']) and (n_bonds == 1) and (n_neighbors == 1):
             a_bond = [ x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)][0]
             a_r = atom_radii[a_number]/1.5
             h_color = atom_colors[1]
@@ -311,7 +315,7 @@ def add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, style, bond_color):
             h_center1 = start + final_vec1
             circle1 = dwg.circle(center=(h_center1), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
             dwg.add(circle1)
-            
+
             angle2 = -sign * np.deg2rad(120)
             rot2 = np.array([[math.cos(angle2), -math.sin(angle2)],[math.sin(angle2), math.cos(angle2)]])
             rotated2 = np.dot(rot2, vec)
@@ -321,8 +325,8 @@ def add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, style, bond_color):
             circle2 = dwg.circle(center=(h_center2), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
             dwg.add(circle2)
 
-        if (a_name in ['N','P']) and (n_bonds == 2) and (n_neighbors == 2): 
-            
+        if (a_name in ['N','P']) and (n_bonds == 2) and (n_neighbors == 2):
+
             a_bond = [ x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)]
             b1, b2 = a_bond
 
@@ -378,8 +382,8 @@ def main(args):
 
     for smile in smiles:
         if args.name == 'SMILES':
-            svg_name = f'{smile}.svg' 
-            png_name = f'{smile}.png' 
+            svg_name = f'{smile}.svg'
+            png_name = f'{smile}.png'
         else:
             svg_name = f'{args.name}.svg'
             png_name = f'{args.name}.png'
@@ -390,6 +394,7 @@ def main(args):
         draw_color = args.color
         bond_color = args.bond_color
         font = args.font
+        thickness = float(args.bond_thickness)
 
         Chem.Kekulize(mol)
 
@@ -402,7 +407,7 @@ def main(args):
 
         hydrogens = args.add_hydrogens
 
-        svg = draw_molecule(svg_name, atom_data, bond_data, draw_style, draw_color, font, bond_color, hydrogens)
+        svg = draw_molecule(svg_name, atom_data, bond_data, draw_style, draw_color, font, bond_color, hydrogens, thickness)
 
         if args.png:
             width = args.png_width
@@ -417,8 +422,8 @@ if __name__ == "__main__":
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
     parser.add_argument(
-            "-s","--smiles", 
-            type=str, 
+            "-s","--smiles",
+            type=str,
             default='none',
             help="SMILES string of the mol")
     parser.add_argument(
@@ -432,15 +437,15 @@ if __name__ == "__main__":
             default='SMILES',
             help="Name for the SVG (and PNG) image. Only available for 1 SMILES code, not for list of SMILES.")
     parser.add_argument(
-            "--style", 
-            type=str, 
-            choices=['plain','names_hetero','names_all','stroke'], 
-            default='plain', 
+            "--style",
+            type=str,
+            choices=['plain','names_hetero','names_all','stroke'],
+            default='plain',
             help="Select the style for the atoms.")
     parser.add_argument(
-            "--color", 
-            type=str, 
-            default='default', 
+            "--color",
+            type=str,
+            default='default',
             help="Select a color for all the molecule. If 'default', atoms will have different colors depending on the element.")
     parser.add_argument(
             "--png",
@@ -459,12 +464,20 @@ if __name__ == "__main__":
     parser.add_argument(
             "--bond_color",
             type=str,
-            default='#717171',
+            default='#000000',
             help='Select the color for the bonds format "#RRGGBB".')
+    parser.add_argument(
+            "--bond_thickness",
+            type=str,
+            default='0.1',
+            help='Select the bonds thickness.')
+    parser.add_argument(
+            "--add_carbons",
+            action='store_true',
+            help="Adds carbon atoms to the figures.")
     parser.add_argument(
             "--add_hydrogens",
             action='store_true',
             help="Adds Hydrogen atoms to the HB-Donors.")
     args = parser.parse_args()
     main(args)
-
