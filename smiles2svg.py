@@ -200,7 +200,7 @@ def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, thickness
         if a_name != 'C':
             r += 0.1
             sw = 0.0
-            if not(circle):
+            if circles:
                 sw = 0.1
 
             else:
@@ -225,10 +225,10 @@ def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors,font, thickness, ca
 
         r += 0.1
         sw = 0.0
-        if not(circle):
+        if circles:
             sw = 0.1
 
-        circle = dwg.circle(center=(cx,cy), r=r, fill='#ffffff', stroke=color, stroke_width=0.1)
+        circle = dwg.circle(center=(cx,cy), r=r, fill='#ffffff', stroke=color, stroke_width=sw)
         text = dwg.text(a_name, insert=(cx-0.3,cy+0.25), font_size=0.8, font_family=font, fill=color)
 
         dwg.add(circle)
