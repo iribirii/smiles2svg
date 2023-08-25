@@ -74,9 +74,9 @@ def atom_parameters(color):
            ] + [1.40]*23
 
     if color == 'default':
-        colors = [ '#7f7f7f',
+        colors = [ '#000000',
           '#d0d0d0',                                                                                                                                                                                 '#A0A0A0',
-          '#A0A0A0', '#A0A0A0',                                                                                                               '#FF99FF', '#404040', '#2020FF', '#FF2020', '#00BB00', '#A0A0A0',
+          '#A0A0A0', '#A0A0A0',                                                                                                               '#FF99FF', '#000000', '#2020FF', '#FF2020', '#00BB00', '#A0A0A0',
           '#880000', '#A0A0A0',                                                                                                               '#A0A0A0', '#090909', '#FF8800', '#F0F000', '#55FF55', '#A0A0A0',
           '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#AA3311', '#A0A0A0',
           '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#802090', '#A0A0A0',
@@ -98,13 +98,13 @@ def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_col
 
     # Draw atoms
     if draw_style == 'plain':
-        draw_atoms_plain(dwg, atoms, atom_radii, atom_colors)
+        draw_atoms_plain(dwg, atoms, atom_radii, atom_colors, thickness)
     elif draw_style == 'names_hetero':
-        draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font)
+        draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, thickness)
     elif draw_style == 'names_all':
-        draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors, font)
+        draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors, font, thickness)
     elif draw_style == 'stroke':
-        draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color)
+        draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color, thickness)
 
     if hydrogens:
         add_hydroges(dwg, atoms, bonds, atom_colors, atom_radii, draw_style, bond_color)
@@ -166,30 +166,30 @@ def calculate_angle(vec):
 
     return angle_degrees
 
-def draw_atoms_plain(dwg, atoms, atom_radii, atom_colors):
+def draw_atoms_plain(dwg, atoms, atom_radii, atom_colors, thickness):
     for atom in atoms:
         a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
         cx, cy = coord
         r = atom_radii[a_number]/1.5
         color = atom_colors[a_number]
         if a_name == 'C':
-            r=0.05
+            r=thickness/2
 
         circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke='none')
         dwg.add(circle)
 
-def draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color):
+def draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color, thickness):
     for atom in atoms:
         a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
         cx, cy = coord
         r = atom_radii[a_number]/1.5
         color = atom_colors[a_number]
         if a_name == 'C':
-            r=0.05
+            r=thickness/2
         circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke=bond_color, stroke_width=0.1)
         dwg.add(circle)
 
-def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font):
+def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, thickness):
     for atom in atoms:
         a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
         cx, cy = coord
@@ -205,11 +205,11 @@ def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font):
             dwg.add(circle)
             dwg.add(text)
         else:
-            r=0.05
+            r=thickness/2
             circle = dwg.circle(center=(cx,cy), r=r, fill=color, stroke='none')
             dwg.add(circle)
 
-def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors,font):
+def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors,font, thickness):
     for atom in atoms:
         a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
         cx, cy = coord
@@ -470,11 +470,11 @@ if __name__ == "__main__":
             "--bond_thickness",
             type=str,
             default='0.1',
-            help='Select the bonds thickness.')
+            help='Set the bonds thickness.')
     parser.add_argument(
             "--add_carbons",
             action='store_true',
-            help="Adds carbon atoms to the figures.")
+            help="Show carbon atoms to the figures.")
     parser.add_argument(
             "--add_hydrogens",
             action='store_true',
