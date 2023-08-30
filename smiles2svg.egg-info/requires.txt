@@ -1,4 +1,0 @@
-CairoSVG
-numpy
-rdkit
-svgwrite
