@@ -1,0 +1,2 @@
+[console_scripts]
+smiles2svg = smiles2svg.smiles2svg:main

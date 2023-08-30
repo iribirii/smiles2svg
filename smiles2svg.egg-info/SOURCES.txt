@@ -1,0 +1,16 @@
+LICENSE
+README.md
+setup.py
+smiles2svg/__init__.py
+smiles2svg/__main__.py
+smiles2svg/arg_parser.py
+smiles2svg/drawing_tools.py
+smiles2svg/mol_tools.py
+smiles2svg/smiles2svg.py
+smiles2svg/utils.py
+smiles2svg.egg-info/PKG-INFO
+smiles2svg.egg-info/SOURCES.txt
+smiles2svg.egg-info/dependency_links.txt
+smiles2svg.egg-info/entry_points.txt
+smiles2svg.egg-info/requires.txt
+smiles2svg.egg-info/top_level.txt
