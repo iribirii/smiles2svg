@@ -1,94 +1,16 @@
 #!/usr/bin/env python3
 
-import argparse
-from ctypes import resize
-from rdkit import Chem
-from rdkit.Chem import AllChem
 import svgwrite
 import numpy as np
-from cairosvg import svg2png
 import math
 
-
-def extract_coordinates(mol):
-    atom_data = []
-
-    for atom in mol.GetAtoms():
-        atom_type = atom.GetSymbol()
-        atom_number = atom.GetAtomicNum()
-        atom_id = atom.GetIdx()
-        atom_n_neighbors = atom.GetDegree()
-        pos = mol.GetConformer().GetAtomPosition(atom.GetIdx())
-        atom_coords = (pos.x, pos.y)
-        # Count the number of bonds based on their types
-        n_bonds = 0
-        for neighbor in atom.GetNeighbors():
-            bond = mol.GetBondBetweenAtoms(atom.GetIdx(), neighbor.GetIdx())
-            if bond.GetBondType() == Chem.rdchem.BondType.SINGLE:
-                n_bonds += 1
-            elif bond.GetBondType() == Chem.rdchem.BondType.AROMATIC:
-                n_bonds += 1.5
-            elif bond.GetBondType() == Chem.rdchem.BondType.DOUBLE:
-                n_bonds += 2
-            elif bond.GetBondType() == Chem.rdchem.BondType.TRIPLE:
-                n_bonds += 3
-
-        atom_data.append((atom_type, atom_id, atom_number, n_bonds, atom_n_neighbors, atom_coords))
-
-    return atom_data
-
-def extract_bonds(mol):
-    bond_data = []
-
-    for bond in mol.GetBonds():
-        begin_atom = bond.GetBeginAtom()
-        end_atom = bond.GetEndAtom()
-        begin_id = begin_atom.GetIdx()
-        end_id = end_atom.GetIdx()
-        bond_type = bond.GetBondTypeAsDouble()  # Change to GetBondType() for string representation
-        begin_pos = mol.GetConformer().GetAtomPosition(begin_atom.GetIdx())
-        end_pos = mol.GetConformer().GetAtomPosition(end_atom.GetIdx())
-        bond_coords = ((begin_pos.x, begin_pos.y), (end_pos.x, end_pos.y))
-        atom1 = begin_atom.GetAtomicNum()
-        atom2 = end_atom.GetAtomicNum()
-        bond_data.append((bond_type, bond_coords, atom1, atom2, begin_id, end_id))
-
-    return bond_data
-
-def atom_parameters(color):
-    radii = [ 0.0,
-      0.35, 0.20,
-      1.45, 1.05, 0.85, 0.70, 0.65, 0.60, 0.50, 0.40,
-      1.80, 1.50, 1.25, 1.10, 1.00, 1.00, 1.00, 0.90,
-      2.20, 1.80, 1.60, 1.40, 1.35, 1.40, 1.40, 1.40, 1.35, 1.35,
-      1.35, 1.35, 1.30, 1.25, 1.15, 1.15, 1.15, 1.00,
-      2.35, 2.00, 1.80, 1.55, 1.45, 1.45, 1.35, 1.30, 1.35, 1.40,
-      1.60, 1.55, 1.55, 1.45, 1.45, 1.40, 1.40, 1.30,
-      2.35, 1.98, 1.69, 1.65, 1.65, 1.64, 1.65, 1.66, 1.85,
-                  1.61, 1.59, 1.59, 1.58, 1.57, 1.56, 1.70,
-                  1.56, 1.44, 1.34, 1.30, 1.28, 1.26, 1.26, 1.29,
-      1.34, 1.44, 1.55, 1.54, 1.52, 1.53, 1.53, 1.50,
-      2.70, 2.23, 1.87, 1.78, 1.61, 1.40, 1.40, 1.40, 1.40,
-                  1.40, 1.40, 1.40, 1.40, 1.40, 1.40, 1.40,
-                  1.40, 1.40
-           ] + [1.40]*23
-
-    if color == 'default':
-        colors = [ '#7f7f7f',
-          '#d0d0d0',                                                                                                                                                                                 '#A0A0A0',
-          '#A0A0A0', '#A0A0A0',                                                                                                               '#FF99FF', '#404040', '#2020FF', '#FF2020', '#00BB00', '#A0A0A0',
-          '#880000', '#A0A0A0',                                                                                                               '#A0A0A0', '#090909', '#FF8800', '#F0F000', '#55FF55', '#A0A0A0',
-          '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#AA3311', '#A0A0A0',
-          '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#A0A0A0', '#802090', '#A0A0A0',
-                ] + ['#A0A0A0']*64
-    else:
-        colors = [color]*128
-    return radii, colors
+from smiles2svg.utils import get_atom_radii, get_atom_colors
 
 def draw_molecule(filename, atoms, bonds, draw_style, draw_color, font, bond_color, hydrogens):
 
     # Get atomic radii and colors
-    atom_radii, atom_colors = atom_parameters(draw_color)
+    atom_radii = get_atom_radii()
+    atom_colors = get_atom_colors(draw_color)
     dwg = svgwrite.Drawing(filename)
 
     if draw_color != 'default':
@@ -368,103 +290,4 @@ def set_viewbox(dwg, coords, rs):
     # Set the viewBox and preserveAspectRatio attributes
     dwg.viewbox(*viewBox)
     dwg.fit(scale='meet')
-
-def main(args):
-    if args.smiles != 'none':
-        smiles = [args.smiles]
-    elif args.smiles_file != 'none':
-        with open(args.smiles_file, 'r') as f:
-            smiles = [ line.rstrip('\n') for line in f.readlines()]
-
-    for smile in smiles:
-        if args.name == 'SMILES':
-            svg_name = f'{smile}.svg' 
-            png_name = f'{smile}.png' 
-        else:
-            svg_name = f'{args.name}.svg'
-            png_name = f'{args.name}.png'
-
-        # Load a mol from a SMILES string
-        mol = Chem.MolFromSmiles(smile)
-        draw_style = args.style
-        draw_color = args.color
-        bond_color = args.bond_color
-        font = args.font
-
-        Chem.Kekulize(mol)
-
-        # Generate 2D coordinates using the ETKDG method
-        AllChem.Compute2DCoords(mol)
-
-        # Extract atom types, coordinates, and bond types
-        atom_data = extract_coordinates(mol)
-        bond_data = extract_bonds(mol)
-
-        hydrogens = args.add_hydrogens
-
-        svg = draw_molecule(svg_name, atom_data, bond_data, draw_style, draw_color, font, bond_color, hydrogens)
-
-        if args.png:
-            width = args.png_width
-
-            svg2png(bytestring=svg, write_to=png_name, output_width=width)
-
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-            description="Generate 2D coordinates, draw, and save mol",
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter
-            )
-    parser.add_argument(
-            "-s","--smiles", 
-            type=str, 
-            default='none',
-            help="SMILES string of the mol")
-    parser.add_argument(
-            "-f", "--smiles_file",
-            type=str,
-            default='none',
-            help="Name of the file with all the SMILES codes")
-    parser.add_argument(
-            "-n", "--name",
-            type=str,
-            default='SMILES',
-            help="Name for the SVG (and PNG) image. Only available for 1 SMILES code, not for list of SMILES.")
-    parser.add_argument(
-            "--style", 
-            type=str, 
-            choices=['plain','names_hetero','names_all','stroke'], 
-            default='plain', 
-            help="Select the style for the atoms.")
-    parser.add_argument(
-            "--color", 
-            type=str, 
-            default='default', 
-            help="Select a color for all the molecule. If 'default', atoms will have different colors depending on the element.")
-    parser.add_argument(
-            "--png",
-            action='store_true',
-            help="Saves the figure in png format as well.")
-    parser.add_argument(
-            "--png_width",
-            type=int,
-            default='900',
-            help='Select the image width in pixels.')
-    parser.add_argument(
-            "--font",
-            type=str,
-            default='Calibri',
-            help='Select the font for the atomic symbols.')
-    parser.add_argument(
-            "--bond_color",
-            type=str,
-            default='#717171',
-            help='Select the color for the bonds format "#RRGGBB".')
-    parser.add_argument(
-            "--add_hydrogens",
-            action='store_true',
-            help="Adds Hydrogen atoms to the HB-Donors.")
-    args = parser.parse_args()
-    main(args)
 
