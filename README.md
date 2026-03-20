@@ -27,6 +27,8 @@ smiles2svg -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12'
 
 Creates `Cn1cnc2n(C)c(=O)n(C)c(=O)c12.svg` in the current directory.
 
+Rendering uses a **pixel canvas** (similar to [xyzrender](https://github.com/aligfellow/xyzrender)): coordinates are mapped to SVG space with `viewBox="0 0 W H"`, explicit width/height in pixels. Bond stroke and label size are **Å × scale** (defaults 0.10 Å and 0.80 Å for stroke and font, matching legacy proportions), where `scale` is pixels per Å from fitting the molecule to the canvas — so **relative** thickness and text size stay consistent when you change `--canvas-size` or draw a bigger/smaller structure. Defaults: `--canvas-size 800` and `--padding 20`.
+
 ```bash
 python -m smiles2svg -h
 ```
@@ -58,7 +60,7 @@ smiles2svg -s 'CCO' --png --png-width 900
 ```python
 from smiles2svg import render_smiles_to_svg
 
-svg = render_smiles_to_svg("c1ccccc1", style="plain")
+svg = render_smiles_to_svg("c1ccccc1", style="plain", canvas_size=800, padding=20.0)
 # Pass output_path="out.svg" to also write a file.
 ```
 

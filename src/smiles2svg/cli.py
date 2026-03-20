@@ -66,8 +66,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--font",
         type=str,
-        default="Calibri",
-        help="Font family for atom labels (names_* styles)",
+        default="Calibri, Helvetica, Arial, sans-serif",
+        help="Font stack for atom labels (names_* styles); comma-separated like CSS font-family",
     )
     parser.add_argument(
         "--bond-color",
@@ -79,6 +79,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--add-hydrogens",
         action="store_true",
         help="Draw implicit H on typical H-bond donors (O, N, P)",
+    )
+    parser.add_argument(
+        "--canvas-size",
+        type=int,
+        default=800,
+        metavar="PX",
+        help="Target canvas size (px; longer molecule axis fits in size − 2×padding)",
+    )
+    parser.add_argument(
+        "--padding",
+        type=float,
+        default=20.0,
+        metavar="PX",
+        help="Padding inside the SVG canvas (px)",
     )
     return parser
 
@@ -119,6 +133,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             bond_color=args.bond_color,
             font=args.font,
             add_hydrogens=args.add_hydrogens,
+            canvas_size=args.canvas_size,
+            padding=args.padding,
             output_path=svg_name,
         )
 

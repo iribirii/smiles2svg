@@ -34,6 +34,17 @@ PNG export (requires Cairo):
 
    smiles2svg -s 'CCO' --png --png-width 900
 
+Canvas (xyzrender-style)
+--------------------------
+
+The structure is laid out in **pixel space**: the longer in-plane axis of the molecule is scaled to fit ``canvas_size − 2×padding`` (default 800 px and 20 px padding). Let ``scale`` = (that inner size in px) / (molecular bounding-box span in Å). Bond stroke width and label ``font-size`` are ``constant_Å × scale`` (defaults match legacy 0.1 Å / 0.8 Å stroke and font in coordinate space), so **proportions stay the same** when you change canvas size or when the molecule is larger or smaller in Å. The `xyzrender`_ project uses a related pixel pipeline; stroke/font sizing there is configured differently but the idea of a uniform ``scale`` is the same.
+
+.. _xyzrender: https://github.com/aligfellow/xyzrender
+
+.. code-block:: bash
+
+   smiles2svg -s 'CCO' --canvas-size 800 --padding 20
+
 Python API
 ----------
 
@@ -45,6 +56,8 @@ Python API
        "CCO",
        style="plain",
        color="default",
+       canvas_size=800,
+       padding=20.0,
        # output_path="molecule.svg",  # optional: write to disk
    )
    print(svg[:200])

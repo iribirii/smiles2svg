@@ -20,8 +20,10 @@ def render_smiles_to_svg(
     style: str = "plain",
     color: str = "default",
     bond_color: str = "#717171",
-    font: str = "Calibri",
+    font: str = "Calibri, Helvetica, Arial, sans-serif",
     add_hydrogens: bool = False,
+    canvas_size: int = 800,
+    padding: float = 20.0,
     output_path: Optional[Union[str, os.PathLike[str]]] = None,
 ) -> str:
     """
@@ -29,6 +31,11 @@ def render_smiles_to_svg(
 
     If ``output_path`` is given, the SVG is also written to that path.
     If omitted, a temporary file is used internally and removed after reading.
+
+    Coordinates are rendered in **pixel space** (xyzrender-style): the molecule is
+    fitted to ``canvas_size`` with ``padding``. With ``scale`` = px/Å from that fit,
+    bond stroke and label ``font-size`` are fixed fractions of Å (× scale), so layout
+    stays proportional when the canvas or molecule size changes.
     """
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
@@ -53,6 +60,8 @@ def render_smiles_to_svg(
                 bond_color,
                 add_hydrogens,
                 output_path=path,
+                canvas_size=canvas_size,
+                padding=padding,
             )
         finally:
             path.unlink(missing_ok=True)
@@ -66,4 +75,6 @@ def render_smiles_to_svg(
         bond_color,
         add_hydrogens,
         output_path=out,
+        canvas_size=canvas_size,
+        padding=padding,
     )

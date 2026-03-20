@@ -4,6 +4,7 @@
 
 ### Changed
 
+- **Rendering:** SVG is built in **pixel coordinates** (like `xyzrender`): `viewBox="0 0 W H"` with explicit `width`/`height`, `font-size` in **px**. Bond stroke and label size are **Å × scale** (fixed proportion to RDKit coordinates), not tied to a reference span — canvas- and span-independent proportions. New `layout` module; CLI/API options `--canvas-size` / `--padding` and `canvas_size` / `padding` kwargs.
 - **Packaging:** Switched to `pyproject.toml`, `src/` layout, and entry point `smiles2svg`.
 - **Structure:** Split modules into `render`, `drawing`, `molecule`, `elements`, and `cli`.
 - **API:** Added `render_smiles_to_svg()` for library use; CLI is a thin wrapper.
