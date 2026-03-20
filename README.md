@@ -109,13 +109,19 @@ smiles2svg -s 'Cn1cnc2n(C)c(=O)n(C)c(=O)c12' --add-hydrogens
 
 ## Documentation
 
-Full documentation (installation, API, contributing) is hosted on [Read the Docs](https://smiles2svg.readthedocs.io).
+The manual (**Furo** theme) covers getting started (install, CLI), user guide (styles, canvas, Python API), examples gallery, citation, and API reference — hosted on [Read the Docs](https://smiles2svg.readthedocs.io).
 
 Build locally:
 
 ```bash
 pip install -e ".[docs]"
 cd docs && make html
+```
+
+Regenerate embedded SVG figures (optional):
+
+```bash
+python docs/scripts/generate_doc_figures.py
 ```
 
 ## Contributing

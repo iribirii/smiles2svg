@@ -18,14 +18,17 @@ Tests assume RDKit and other runtime dependencies are installed (same as a norma
 
 ## Documentation
 
-Build the Sphinx site locally:
+The manual uses **Sphinx** with the **Furo** theme (`pip install -e ".[docs]"`).
 
 ```bash
-cd docs
-make html
+cd docs && make html
 ```
 
-Open `docs/_build/html/index.html` in a browser.
+Open `docs/_build/html/index.html`. After changing how diagrams render, regenerate the SVG figures used in the docs:
+
+```bash
+python docs/scripts/generate_doc_figures.py
+```
 
 ## Style
 

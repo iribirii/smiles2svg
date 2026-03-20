@@ -17,14 +17,28 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
-    "sphinx_rtd_theme",
 ]
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
+html_title = f"{project} {version}"
 html_static_path = ["_static"]
+
+html_theme_options = {
+    "source_repository": "https://github.com/iribirii/smiles2svg",
+    "source_branch": "master",
+    "source_directory": "docs/",
+    "light_css_variables": {
+        "color-brand-primary": "#156090",
+        "color-brand-content": "#156090",
+    },
+    "dark_css_variables": {
+        "color-brand-primary": "#5eb3e0",
+        "color-brand-content": "#5eb3e0",
+    },
+}
 
 autodoc_member_order = "bysource"
 napoleon_google_docstring = True
