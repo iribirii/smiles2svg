@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smiles2svg"
+version = "0.2.0"
+description = "Generate 2D molecular structure diagrams as SVG (and optional PNG) from SMILES strings."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+authors = [
+  { name = "Inigo Iribarren Aguirre", email = "innigo.iribarren@gmail.com" },
+]
+keywords = [
+  "chemistry",
+  "smiles",
+  "molecular-graph",
+  "rdkit",
+  "svg",
+  "2d-structure",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Chemistry",
+]
+dependencies = [
+  "cairosvg>=2.5",
+  "numpy>=1.20",
+  "rdkit>=2022.9.1",
+  "svgwrite>=1.4",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+]
+docs = [
+  "sphinx>=6.0",
+  "sphinx-rtd-theme>=2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/iribirii/smiles2svg"
+Repository = "https://github.com/iribirii/smiles2svg"
+Documentation = "https://smiles2svg.readthedocs.io"
+Issues = "https://github.com/iribirii/smiles2svg/issues"
+
+[project.scripts]
+smiles2svg = "smiles2svg.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+smiles2svg = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
