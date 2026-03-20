@@ -116,7 +116,10 @@ def get_atom_radii() -> list[float]:
 
 
 def get_atom_colors(color: str) -> list[str]:
-    """Return fill colors per atomic number; ``color`` overrides element colors when not ``default``."""
+    """Return fill colors per atomic number.
+
+    If ``color`` is not ``default``, that color is used for every element.
+    """
     if color == "default":
         colors = [
             "#7f7f7f",

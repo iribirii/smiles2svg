@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 import tempfile
 from pathlib import Path
-from typing import Optional, Union
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -24,7 +23,7 @@ def render_smiles_to_svg(
     add_hydrogens: bool = False,
     canvas_size: int = 800,
     padding: float = 20.0,
-    output_path: Optional[Union[str, os.PathLike[str]]] = None,
+    output_path: str | os.PathLike[str] | None = None,
 ) -> str:
     """
     Build a 2D structure from ``smiles`` and return the SVG document as a string.
@@ -40,7 +39,10 @@ def render_smiles_to_svg(
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         raise ValueError(f"Invalid SMILES: {smiles!r}")
-    Chem.Kekulize(mol)
+    try:
+        Chem.SanitizeMol(mol)
+    except Chem.MolSanitizeException as e:
+        raise ValueError(f"Invalid or unsanitizable SMILES: {smiles!r}") from e
     AllChem.Compute2DCoords(mol)
     atom_data = extract_coordinates(mol)
     bond_data = extract_bonds(mol)

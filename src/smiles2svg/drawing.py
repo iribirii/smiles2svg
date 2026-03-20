@@ -18,6 +18,7 @@ from smiles2svg.layout import (
     displace_perpendicular_mol,
     make_viewport,
 )
+from smiles2svg.molecule import AtomRecord, BondRecord
 
 PathLike = Union[str, Path]
 
@@ -50,8 +51,8 @@ def _atom_symbol_text(
 
 
 def draw_molecule(
-    atoms: list,
-    bonds: list,
+    atoms: list[AtomRecord],
+    bonds: list[BondRecord],
     draw_style: str,
     draw_color: str,
     font: str,
@@ -91,17 +92,21 @@ def draw_molecule(
         draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color, vp)
 
     if hydrogens:
-        add_hydrogens_to_donors(dwg, atoms, bonds, atom_colors, atom_radii, draw_style, bond_color, vp)
+        add_hydrogens_to_donors(
+            dwg, atoms, bonds, atom_colors, atom_radii, draw_style, bond_color, vp
+        )
 
     dwg.save()
     return dwg.tostring()
 
 
-def draw_bonds(dwg: svgwrite.Drawing, bonds: list, color: str, vp: PixelViewport) -> None:
+def draw_bonds(
+    dwg: svgwrite.Drawing, bonds: list[BondRecord], color: str, vp: PixelViewport
+) -> None:
     bw = vp.bond_width_px
     for bond in bonds:
-        bond_order = bond[0]
-        bond_start, bond_end = bond[1]
+        bond_order = bond.order
+        bond_start, bond_end = bond.start_xy, bond.end_xy
         p1 = vp.to_px(bond_start[0], bond_start[1])
         p2 = vp.to_px(bond_end[0], bond_end[1])
 
@@ -148,42 +153,71 @@ def draw_bonds(dwg: svgwrite.Drawing, bonds: list, color: str, vp: PixelViewport
             dwg.add(line_down)
 
 
-def draw_atoms_plain(dwg, atoms, atom_radii, atom_colors, vp: PixelViewport):
+def draw_atoms_plain(
+    dwg: svgwrite.Drawing,
+    atoms: list[AtomRecord],
+    atom_radii: list[float],
+    atom_colors: list[str],
+    vp: PixelViewport,
+) -> None:
     for atom in atoms:
-        a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
-        cx, cy = coord
-        r = vp.radius_px(atom_radii[a_number] / 1.5)
-        color = atom_colors[a_number]
+        cx, cy = atom.coord
+        r = vp.radius_px(atom_radii[atom.atomic_num] / 1.5)
+        color = atom_colors[atom.atomic_num]
         px, py = vp.to_px(cx, cy)
         circle = dwg.circle(center=(px, py), r=r, fill=color, stroke="none")
         dwg.add(circle)
 
 
-def draw_atoms_stroke(dwg, atoms, atom_radii, atom_colors, bond_color, vp: PixelViewport):
+def draw_atoms_stroke(
+    dwg: svgwrite.Drawing,
+    atoms: list[AtomRecord],
+    atom_radii: list[float],
+    atom_colors: list[str],
+    bond_color: str,
+    vp: PixelViewport,
+) -> None:
     for atom in atoms:
-        a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
-        cx, cy = coord
-        r = vp.radius_px(atom_radii[a_number] / 1.5)
-        color = atom_colors[a_number]
+        cx, cy = atom.coord
+        r = vp.radius_px(atom_radii[atom.atomic_num] / 1.5)
+        color = atom_colors[atom.atomic_num]
         px, py = vp.to_px(cx, cy)
-        circle = dwg.circle(center=(px, py), r=r, fill=color, stroke=bond_color, stroke_width=vp.bond_width_px)
+        circle = dwg.circle(
+            center=(px, py),
+            r=r,
+            fill=color,
+            stroke=bond_color,
+            stroke_width=vp.bond_width_px,
+        )
         dwg.add(circle)
 
 
-def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, vp: PixelViewport):
+def draw_atoms_hetero_names(
+    dwg: svgwrite.Drawing,
+    atoms: list[AtomRecord],
+    atom_radii: list[float],
+    atom_colors: list[str],
+    font: str,
+    vp: PixelViewport,
+) -> None:
     fs = vp.label_font_px
     for atom in atoms:
-        a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
-        cx, cy = coord
-        r_mol = atom_radii[a_number] / 1.5
-        color = atom_colors[a_number]
+        cx, cy = atom.coord
+        r_mol = atom_radii[atom.atomic_num] / 1.5
+        color = atom_colors[atom.atomic_num]
 
-        if a_name != "C":
+        if atom.symbol != "C":
             r_mol += 0.1
             r = vp.radius_px(r_mol)
             px, py = vp.to_px(cx, cy)
-            circle = dwg.circle(center=(px, py), r=r, fill="#ffffff", stroke=color, stroke_width=vp.bond_width_px)
-            text = _atom_symbol_text(dwg, a_name, px, py, color, font, fs)
+            circle = dwg.circle(
+                center=(px, py),
+                r=r,
+                fill="#ffffff",
+                stroke=color,
+                stroke_width=vp.bond_width_px,
+            )
+            text = _atom_symbol_text(dwg, atom.symbol, px, py, color, font, fs)
             dwg.add(circle)
             dwg.add(text)
         else:
@@ -193,22 +227,43 @@ def draw_atoms_hetero_names(dwg, atoms, atom_radii, atom_colors, font, vp: Pixel
             dwg.add(circle)
 
 
-def draw_atoms_all_names(dwg, atoms, atom_radii, atom_colors, font, vp: PixelViewport):
+def draw_atoms_all_names(
+    dwg: svgwrite.Drawing,
+    atoms: list[AtomRecord],
+    atom_radii: list[float],
+    atom_colors: list[str],
+    font: str,
+    vp: PixelViewport,
+) -> None:
     fs = vp.label_font_px
     for atom in atoms:
-        a_name, a_id, a_number, n_neighbors, n_bonds, coord = atom
-        cx, cy = coord
-        r_mol = atom_radii[a_number] / 1.5 + 0.1
-        color = atom_colors[a_number]
+        cx, cy = atom.coord
+        r_mol = atom_radii[atom.atomic_num] / 1.5 + 0.1
+        color = atom_colors[atom.atomic_num]
         r = vp.radius_px(r_mol)
         px, py = vp.to_px(cx, cy)
-        circle = dwg.circle(center=(px, py), r=r, fill="#ffffff", stroke=color, stroke_width=vp.bond_width_px)
-        text = _atom_symbol_text(dwg, a_name, px, py, color, font, fs)
+        circle = dwg.circle(
+            center=(px, py),
+            r=r,
+            fill="#ffffff",
+            stroke=color,
+            stroke_width=vp.bond_width_px,
+        )
+        text = _atom_symbol_text(dwg, atom.symbol, px, py, color, font, fs)
         dwg.add(circle)
         dwg.add(text)
 
 
-def add_hydrogens_to_donors(dwg, atoms, bonds, atom_colors, atom_radii, style, bond_color, vp: PixelViewport):
+def add_hydrogens_to_donors(
+    dwg: svgwrite.Drawing,
+    atoms: list[AtomRecord],
+    bonds: list[BondRecord],
+    atom_colors: list[str],
+    atom_radii: list[float],
+    style: str,
+    bond_color: str,
+    vp: PixelViewport,
+) -> None:
     if style == "plain":
         r_extra = 0
         s_width = 0
@@ -227,68 +282,88 @@ def add_hydrogens_to_donors(dwg, atoms, bonds, atom_colors, atom_radii, style, b
     h_color = atom_colors[1]
 
     for atom in atoms:
-        a_name, a_id, a_number, n_bonds, n_neighbors, coord = atom
+        sym = atom.symbol
+        aid = atom.atom_idx
+        z = atom.atomic_num
+        bond_order_sum = atom.bond_order_sum
+        degree = atom.degree
 
-        if (a_name in ["O", "S"]) and (n_bonds == 1) and (n_neighbors == 1):
-            a_bond = [x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)][0]
-            a_r_mol = atom_radii[a_number] / 1.5
+        if (sym in ("O", "S")) and (bond_order_sum == 1) and (degree == 1):
+            a_bond = [b for b in bonds if aid in (b.begin_atom_idx, b.end_atom_idx)][0]
+            a_r_mol = atom_radii[z] / 1.5
 
-            if a_id == a_bond[-2]:
-                start, end = a_bond[1]
+            if aid == a_bond.begin_atom_idx:
+                start, end = a_bond.start_xy, a_bond.end_xy
                 vec = np.array(end) - np.array(start)
-            elif a_id == a_bond[-1]:
-                end, start = a_bond[1]
-                vec = np.array(end) - np.array(start)
-            sign_x = np.sign(vec[0])
-            sign_y = np.sign(vec[1])
-            sign = sign_x * sign_y
-            sign = 1 if abs(sign) == 0 else sign
-            angle = sign * np.deg2rad(120)
-            rot = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]])
-            rotated = np.dot(rot, vec)
-            d = a_r_mol + h_r_mol + r_extra
-            length = np.linalg.norm(rotated)
-            final_vec = (rotated / length) * d
-            h_center = np.array(start) + final_vec
-            px, py = vp.to_px(float(h_center[0]), float(h_center[1]))
-            circle = dwg.circle(center=(px, py), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
-            dwg.add(circle)
-
-        if (a_name in ["N", "P"]) and (n_bonds == 2) and (n_neighbors == 1):
-            a_bond = [x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)][0]
-            a_r_mol = atom_radii[a_number] / 1.5
-
-            if a_id == a_bond[-2]:
-                start, end = a_bond[1]
-                vec = np.array(end) - np.array(start)
-            elif a_id == a_bond[-1]:
-                end, start = a_bond[1]
+            else:
+                start, end = a_bond.end_xy, a_bond.start_xy
                 vec = np.array(end) - np.array(start)
             sign_x = np.sign(vec[0])
             sign_y = np.sign(vec[1])
             sign = sign_x * sign_y
             sign = 1 if abs(sign) == 0 else sign
             angle = sign * np.deg2rad(120)
-            rot = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]])
+            rot = np.array(
+                [[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]]
+            )
             rotated = np.dot(rot, vec)
             d = a_r_mol + h_r_mol + r_extra
             length = np.linalg.norm(rotated)
             final_vec = (rotated / length) * d
             h_center = np.array(start) + final_vec
             px, py = vp.to_px(float(h_center[0]), float(h_center[1]))
-            circle = dwg.circle(center=(px, py), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
+            circle = dwg.circle(
+                center=(px, py),
+                r=h_r,
+                fill=h_color,
+                stroke=bond_color,
+                stroke_width=s_width,
+            )
             dwg.add(circle)
 
-        if (a_name in ["N", "P"]) and (n_bonds == 1) and (n_neighbors == 1):
-            a_bond = [x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)][0]
-            a_r_mol = atom_radii[a_number] / 1.5
+        if (sym in ("N", "P")) and (bond_order_sum == 2) and (degree == 1):
+            a_bond = [b for b in bonds if aid in (b.begin_atom_idx, b.end_atom_idx)][0]
+            a_r_mol = atom_radii[z] / 1.5
+
+            if aid == a_bond.begin_atom_idx:
+                start, end = a_bond.start_xy, a_bond.end_xy
+                vec = np.array(end) - np.array(start)
+            else:
+                start, end = a_bond.end_xy, a_bond.start_xy
+                vec = np.array(end) - np.array(start)
+            sign_x = np.sign(vec[0])
+            sign_y = np.sign(vec[1])
+            sign = sign_x * sign_y
+            sign = 1 if abs(sign) == 0 else sign
+            angle = sign * np.deg2rad(120)
+            rot = np.array(
+                [[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]]
+            )
+            rotated = np.dot(rot, vec)
+            d = a_r_mol + h_r_mol + r_extra
+            length = np.linalg.norm(rotated)
+            final_vec = (rotated / length) * d
+            h_center = np.array(start) + final_vec
+            px, py = vp.to_px(float(h_center[0]), float(h_center[1]))
+            circle = dwg.circle(
+                center=(px, py),
+                r=h_r,
+                fill=h_color,
+                stroke=bond_color,
+                stroke_width=s_width,
+            )
+            dwg.add(circle)
+
+        if (sym in ("N", "P")) and (bond_order_sum == 1) and (degree == 1):
+            a_bond = [b for b in bonds if aid in (b.begin_atom_idx, b.end_atom_idx)][0]
+            a_r_mol = atom_radii[z] / 1.5
             d = a_r_mol + h_r_mol + r_extra
 
-            if a_id == a_bond[-2]:
-                start, end = a_bond[1]
+            if aid == a_bond.begin_atom_idx:
+                start, end = a_bond.start_xy, a_bond.end_xy
                 vec = np.array(end) - np.array(start)
-            elif a_id == a_bond[-1]:
-                end, start = a_bond[1]
+            else:
+                start, end = a_bond.end_xy, a_bond.start_xy
                 vec = np.array(end) - np.array(start)
 
             sign_x = np.sign(vec[0])
@@ -297,52 +372,73 @@ def add_hydrogens_to_donors(dwg, atoms, bonds, atom_colors, atom_radii, style, b
             sign = 1 if abs(sign) == 0 else sign
 
             angle1 = sign * np.deg2rad(120)
-            rot1 = np.array([[math.cos(angle1), -math.sin(angle1)], [math.sin(angle1), math.cos(angle1)]])
+            rot1 = np.array(
+                [[math.cos(angle1), -math.sin(angle1)], [math.sin(angle1), math.cos(angle1)]]
+            )
             rotated1 = np.dot(rot1, vec)
             length = np.linalg.norm(rotated1)
             final_vec1 = (rotated1 / length) * d
             h_center1 = np.array(start) + final_vec1
             px1, py1 = vp.to_px(float(h_center1[0]), float(h_center1[1]))
-            circle1 = dwg.circle(center=(px1, py1), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
+            circle1 = dwg.circle(
+                center=(px1, py1),
+                r=h_r,
+                fill=h_color,
+                stroke=bond_color,
+                stroke_width=s_width,
+            )
             dwg.add(circle1)
 
             angle2 = -sign * np.deg2rad(120)
-            rot2 = np.array([[math.cos(angle2), -math.sin(angle2)], [math.sin(angle2), math.cos(angle2)]])
+            rot2 = np.array(
+                [[math.cos(angle2), -math.sin(angle2)], [math.sin(angle2), math.cos(angle2)]]
+            )
             rotated2 = np.dot(rot2, vec)
             length = np.linalg.norm(rotated2)
             final_vec2 = (rotated2 / length) * d
             h_center2 = np.array(start) + final_vec2
             px2, py2 = vp.to_px(float(h_center2[0]), float(h_center2[1]))
-            circle2 = dwg.circle(center=(px2, py2), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
+            circle2 = dwg.circle(
+                center=(px2, py2),
+                r=h_r,
+                fill=h_color,
+                stroke=bond_color,
+                stroke_width=s_width,
+            )
             dwg.add(circle2)
 
-        if (a_name in ["N", "P"]) and (n_bonds == 2) and (n_neighbors == 2):
-
-            a_bond = [x for x in bonds if (x[-2] == a_id) or (x[-1] == a_id)]
+        if (sym in ("N", "P")) and (bond_order_sum == 2) and (degree == 2):
+            a_bond = [b for b in bonds if aid in (b.begin_atom_idx, b.end_atom_idx)]
             b1, b2 = a_bond
 
-            if a_id == b1[-2]:
-                start, end = b1[1]
+            if aid == b1.begin_atom_idx:
+                start, end = b1.start_xy, b1.end_xy
                 vec1 = np.array(end) - np.array(start)
-            elif a_id == b1[-1]:
-                end, start = b1[1]
+            else:
+                start, end = b1.end_xy, b1.start_xy
                 vec1 = np.array(end) - np.array(start)
 
-            if a_id == b2[-2]:
-                start, end = b2[1]
+            if aid == b2.begin_atom_idx:
+                start, end = b2.start_xy, b2.end_xy
                 vec2 = np.array(end) - np.array(start)
-            elif a_id == b2[-1]:
-                end, start = b2[1]
+            else:
+                start, end = b2.end_xy, b2.start_xy
                 vec2 = np.array(end) - np.array(start)
 
             vec_bis = -1 * (vec1 + vec2) / 2
 
-            a_r_mol = atom_radii[a_number] / 1.5
+            a_r_mol = atom_radii[z] / 1.5
             d = a_r_mol + h_r_mol + r_extra
             length = np.linalg.norm(vec_bis)
 
             final_vec = (vec_bis / length) * d
             h_center = np.array(start) + final_vec
             px, py = vp.to_px(float(h_center[0]), float(h_center[1]))
-            circle = dwg.circle(center=(px, py), r=h_r, fill=h_color, stroke=bond_color, stroke_width=s_width)
+            circle = dwg.circle(
+                center=(px, py),
+                r=h_r,
+                fill=h_color,
+                stroke=bond_color,
+                stroke_width=s_width,
+            )
             dwg.add(circle)

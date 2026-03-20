@@ -16,9 +16,10 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Tuple
 
 import numpy as np
+
+from smiles2svg.molecule import AtomRecord, BondRecord
 
 # Stroke width and label font size in Å (same units as RDKit 2D coordinates).
 # Pixel size = factor × scale, where scale = (canvas_inner_px) / max_span_Å.
@@ -40,8 +41,8 @@ HYDROGEN_MARGIN = 1.8
 
 
 def displace_perpendicular_mol(
-    start: Tuple[float, float], end: Tuple[float, float], dist: float
-) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    start: tuple[float, float], end: tuple[float, float], dist: float
+) -> tuple[tuple[float, float], tuple[float, float]]:
     """Offset bond line perpendicular by dist in molecule coordinates."""
     original_vector = np.array(end) - np.array(start)
     perpendicular_vector = np.array([-original_vector[1], original_vector[0]])
@@ -51,25 +52,22 @@ def displace_perpendicular_mol(
     return new_start.tolist(), new_end.tolist()
 
 
-def _effective_atom_radius(
-    atom: tuple, draw_style: str, atom_radii: list[float]
-) -> float:
-    a_name, _a_id, a_number, _n_bonds, _n_neighbors, _coord = atom
-    r = atom_radii[a_number] / 1.5
+def _effective_atom_radius(atom: AtomRecord, draw_style: str, atom_radii: list[float]) -> float:
+    r = atom_radii[atom.atomic_num] / 1.5
     if draw_style == "names_all":
         r += 0.1
-    elif draw_style == "names_hetero" and a_name != "C":
+    elif draw_style == "names_hetero" and atom.symbol != "C":
         r += 0.1
     return r
 
 
 def compute_scene_bounds(
-    atoms: list,
-    bonds: list,
+    atoms: list[AtomRecord],
+    bonds: list[BondRecord],
     draw_style: str,
     atom_radii: list[float],
     hydrogens: bool,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Axis-aligned bounds (min_xy, max_xy) in molecule coordinates."""
     lo = np.array([math.inf, math.inf])
     hi = np.array([-math.inf, -math.inf])
@@ -81,14 +79,14 @@ def compute_scene_bounds(
         hi[1] = max(hi[1], y)
 
     for atom in atoms:
-        cx, cy = atom[5]
+        cx, cy = atom.coord
         r = _effective_atom_radius(atom, draw_style, atom_radii)
         expand_point(cx - r, cy - r)
         expand_point(cx + r, cy + r)
 
     for bond in bonds:
-        bond_order = bond[0]
-        bond_start, bond_end = bond[1]
+        bond_order = bond.order
+        bond_start, bond_end = bond.start_xy, bond.end_xy
         expand_point(bond_start[0], bond_start[1])
         expand_point(bond_end[0], bond_end[1])
         if bond_order == 2 or bond_order == 1.5:
@@ -101,8 +99,6 @@ def compute_scene_bounds(
         elif bond_order == 3:
             su, eu = displace_perpendicular_mol(bond_start, bond_end, BOND_TRIPLE_OFFSET)
             sd, ed = displace_perpendicular_mol(bond_start, bond_end, -BOND_TRIPLE_OFFSET)
-            expand_point(bond_start[0], bond_start[1])
-            expand_point(bond_end[0], bond_end[1])
             expand_point(su[0], su[1])
             expand_point(eu[0], eu[1])
             expand_point(sd[0], sd[1])
@@ -128,7 +124,7 @@ def fit_canvas(
     hi: np.ndarray,
     canvas_size: int,
     padding: float,
-) -> Tuple[float, float, float, int, int]:
+) -> tuple[float, float, float, int, int]:
     """
     Return scale (px per Å), center (cx_mol, cy_mol), canvas_w, canvas_h.
 
@@ -157,7 +153,7 @@ class PixelViewport:
     bond_width_px: float
     label_font_px: float
 
-    def to_px(self, x: float, y: float) -> Tuple[float, float]:
+    def to_px(self, x: float, y: float) -> tuple[float, float]:
         x_px = self.canvas_w / 2 + self.scale * (x - self.cx_mol)
         y_px = self.canvas_h / 2 + self.scale * (y - self.cy_mol)
         return x_px, y_px

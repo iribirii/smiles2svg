@@ -18,3 +18,9 @@ Layout (pixel viewport)
 
 .. automodule:: smiles2svg.layout
    :members:
+
+Molecule records (RDKit → drawing)
+----------------------------------
+
+.. automodule:: smiles2svg.molecule
+   :members:
