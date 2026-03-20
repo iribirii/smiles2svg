@@ -4,6 +4,7 @@
 
 ### Changed
 
+- **Python:** Requires **3.10+** (was 3.9+).
 - **Docs:** Sphinx manual uses the **Furo** theme with sections for getting started, user guide, examples gallery (generated SVGs), citation, and API. Script `docs/scripts/generate_doc_figures.py` rebuilds gallery images.
 - **Rendering:** SVG is built in **pixel coordinates** (like `xyzrender`): `viewBox="0 0 W H"` with explicit `width`/`height`, `font-size` in **px**. Bond stroke and label size are **Å × scale** (fixed proportion to RDKit coordinates), not tied to a reference span — canvas- and span-independent proportions. New `layout` module; CLI/API options `--canvas-size` / `--padding` and `canvas_size` / `padding` kwargs.
 - **Packaging:** Switched to `pyproject.toml`, `src/` layout, and entry point `smiles2svg`.

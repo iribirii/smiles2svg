@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import NamedTuple
 
 from rdkit import Chem
+from rdkit.Chem import BondType
 
 
 class AtomRecord(NamedTuple):
@@ -48,13 +49,14 @@ def extract_coordinates(mol: Chem.Mol) -> list[AtomRecord]:
         n_bonds = 0.0
         for neighbor in atom.GetNeighbors():
             bond = mol.GetBondBetweenAtoms(atom.GetIdx(), neighbor.GetIdx())
-            if bond.GetBondType() == Chem.rdchem.BondType.SINGLE:
+            btype = bond.GetBondType()
+            if btype == BondType.SINGLE:
                 n_bonds += 1
-            elif bond.GetBondType() == Chem.rdchem.BondType.AROMATIC:
+            elif btype == BondType.AROMATIC:
                 n_bonds += 1.5
-            elif bond.GetBondType() == Chem.rdchem.BondType.DOUBLE:
+            elif btype == BondType.DOUBLE:
                 n_bonds += 2
-            elif bond.GetBondType() == Chem.rdchem.BondType.TRIPLE:
+            elif btype == BondType.TRIPLE:
                 n_bonds += 3
 
         atom_data.append(AtomRecord(atom_type, atom_id, atom_number, n_bonds, degree, coord))

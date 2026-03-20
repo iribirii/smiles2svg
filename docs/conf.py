@@ -1,10 +1,10 @@
 # Configuration file for the Sphinx documentation builder.
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath("../src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 project = "smiles2svg"
 copyright = "2023, Inigo Iribarren Aguirre"

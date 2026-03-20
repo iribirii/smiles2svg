@@ -49,7 +49,9 @@ def displace_perpendicular_mol(
     perpendicular_vector = perpendicular_vector / np.linalg.norm(perpendicular_vector)
     new_start = np.array(start) + perpendicular_vector * dist
     new_end = np.array(end) + perpendicular_vector * dist
-    return new_start.tolist(), new_end.tolist()
+    ns = new_start.tolist()
+    ne = new_end.tolist()
+    return (float(ns[0]), float(ns[1])), (float(ne[0]), float(ne[1]))
 
 
 def _effective_atom_radius(atom: AtomRecord, draw_style: str, atom_radii: list[float]) -> float:

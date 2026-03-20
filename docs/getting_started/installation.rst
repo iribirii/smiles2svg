@@ -4,7 +4,7 @@ Installation
 Requirements
 ------------
 
-* Python 3.9+
+* Python 3.10+
 * `RDKit <https://www.rdkit.org/>`_ — cheminformatics and 2D coordinates
 * `svgwrite <https://svgwrite.readthedocs.io/>`_ — SVG generation
 * `NumPy <https://numpy.org/>`_ — geometry helpers

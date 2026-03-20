@@ -5,6 +5,8 @@
 
 Convert [SMILES](https://en.wikipedia.org/wiki/Simplified_molecular-input_line-entry_system) strings into 2D molecular structure diagrams as **SVG**, with optional **PNG** export (via [Cairo](https://www.cairographics.org/)).
 
+**Requires Python 3.10+.**
+
 ## Install
 
 ```bash

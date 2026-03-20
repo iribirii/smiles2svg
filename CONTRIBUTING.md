@@ -16,6 +16,15 @@ pytest
 
 Tests assume RDKit and other runtime dependencies are installed (same as a normal install).
 
+## Lint & format
+
+[Ruff](https://docs.astral.sh/ruff/) is configured in `pyproject.toml`. Before committing:
+
+```bash
+ruff check src tests docs/scripts docs/conf.py
+ruff format src tests docs/scripts docs/conf.py
+```
+
 ## Documentation
 
 The manual uses **Sphinx** with the **Furo** theme (`pip install -e ".[docs]"`).
