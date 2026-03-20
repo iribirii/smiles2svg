@@ -13,12 +13,6 @@ Convert [SMILES](https://en.wikipedia.org/wiki/Simplified_molecular-input_line-e
 pip install .
 ```
 
-Editable install for development:
-
-```bash
-pip install -e ".[dev,docs]"
-```
-
 Runtime dependencies are declared in `pyproject.toml` (`rdkit`, `svgwrite`, `numpy`, `cairosvg`). On Linux, install Cairo development packages (e.g. `libcairo2-dev`) if you need PNG output.
 
 ## Command line
