@@ -1,5 +1,6 @@
 # smiles2svg
 
+[![PyPI version](https://img.shields.io/pypi/v/smiles2svg.svg)](https://pypi.org/project/smiles2svg/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Documentation Status](https://readthedocs.org/projects/smiles2svg/badge/?version=latest)](https://smiles2svg.readthedocs.io/en/latest/?badge=latest)
 
@@ -8,6 +9,12 @@ Convert [SMILES](https://en.wikipedia.org/wiki/Simplified_molecular-input_line-e
 **Requires Python 3.10+.**
 
 ## Install
+
+```bash
+pip install smiles2svg
+```
+
+From source (this repository):
 
 ```bash
 pip install .
